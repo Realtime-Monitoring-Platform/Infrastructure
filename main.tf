@@ -108,6 +108,58 @@ resource "azurerm_network_interface" "mqtt" {
   }
 }
 
+resource "azurerm_private_dns_zone" "postgres" {
+    name = "postgres.database.azure.com"
+    resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "postgres" {
+    name = "postgres-dns-link"
+    resource_group_name = azurerm_resource_group.main.name
+    private_dns_zone_name = azurerm_private_dns_zone.postgres.name
+    virtual_network_id = azurerm_virtual_network.main.id
+}
+
+resource "azurerm_postgresql_flexible_server" "main" {
+  name                = "${var.prefix}-postgres"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+
+  version = "16"
+
+  delegated_subnet_id = azurerm_subnet.postgres.id
+  private_dns_zone_id = azurerm_private_dns_zone.postgres.id
+
+  administrator_login    = var.postgres_admin_username
+  administrator_password = var.postgres_admin_password
+
+  sku_name   = "B_Standard_B1ms"
+  storage_mb = 32768
+
+  backup_retention_days        = 7
+  geo_redundant_backup_enabled = false
+
+  depends_on = [
+    azurerm_private_dns_zone_virtual_network_link.postgres
+  ]
+
+  tags = {
+    project     = "realtime-monitoring"
+    environment = "student-lab"
+    lifetime    = "2-weeks"
+    role        = "postgresql"
+  }
+}
+
+resource "azurerm_postgresql_flexible_server_database" "app" {
+    for_each = var.postgres_databases
+    name = each.value
+    server_id = azurerm_postgresql_flexible_server.main.id
+
+    charset = "UTF8"
+    collation = "en_US.UTF8"
+}
+
 resource "azurerm_linux_virtual_machine" "mqtt" {
     name = "${var.prefix}-mqtt-vm"
     resource_group_name = azurerm_resource_group.main.name

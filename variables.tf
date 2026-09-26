@@ -39,3 +39,23 @@ variable  "mqtt_dns_label" {
     type = string
     default = "mqtt-chedly-2026"
 }
+
+variable "postgres_admin_username" {
+    type = string
+    default = "postgres"
+}
+
+variable "postgres_admin_password" {
+    type = string
+    default = "postgres"
+}
+
+
+variable "postgres_databases" {
+    type = list(string)
+    default = ["jwt","ai_analysis_db",
+    "device_management","notification",
+    "device_management",
+    "read_database",
+    "tenant_mang"]
+}
