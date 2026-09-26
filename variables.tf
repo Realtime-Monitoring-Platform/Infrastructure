@@ -4,7 +4,7 @@ variable "location" {
     default = "westeurope"
 }
 
-variable "ressource_group_name" {
+variable "resource_group_name" {
     type = string
     default = "rg-realtime-monitoring"
 }
