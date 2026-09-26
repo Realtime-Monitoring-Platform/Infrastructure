@@ -30,6 +30,25 @@ resource "azurerm_subnet" "aks" {
     address_prefixes = ["10.0.1.0/24"]
 }
 
+
+resource "azurerm_subnet" "postgres" {
+    name = "postgres-subnet"
+    resource_group_name = azurerm_resource_group.main.name
+    virtual_network_name = azurerm_virtual_network.main.name
+    address_prefixes = ["10.0.3.0/24"]
+    delegation {
+    name = "postgres-flexible-server"
+
+    service_delegation {
+      name = "Microsoft.DBforPostgreSQL/flexibleServers"
+
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/join/action"
+      ]
+    }
+  }
+
+}
 resource "azurerm_network_security_group" "mqtt" {
     name = "${var.prefix}-mqtt-nsg"
     location = azurerm_resource_group.main.location
@@ -142,7 +161,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
     network_profile {
         network_plugin = "kubenet"
-        load_balancer_sku = "basic"
+        load_balancer_sku = "standard"
         service_cidr = "10.1.0.0/16"
         dns_service_ip = "10.1.0.10"
     }
