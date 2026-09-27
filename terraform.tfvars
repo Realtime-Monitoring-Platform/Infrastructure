@@ -9,4 +9,8 @@ ssh_public_key = "C:/Users/User/Desktop/realtime_monitoring/infra/.ssh/id_rsa.pu
 
 postgres_admin_username = "postgres"
 postgres_admin_password = "postgres"
-postgres_databases = ["jwt", "device_management", "notification", "read_database", "tenant_management"]
+postgres_databases =["jwt","ai_analysis_db",
+    "notification",
+    "device_management",
+    "read_database",
+    "tenant_mang"]

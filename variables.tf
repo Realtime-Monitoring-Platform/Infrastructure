@@ -48,13 +48,14 @@ variable "postgres_admin_username" {
 variable "postgres_admin_password" {
     type = string
     default = "postgres"
+    sensitive = true
 }
 
 
 variable "postgres_databases" {
     type = list(string)
     default = ["jwt","ai_analysis_db",
-    "device_management","notification",
+    "notification",
     "device_management",
     "read_database",
     "tenant_mang"]
