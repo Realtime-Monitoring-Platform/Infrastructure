@@ -94,6 +94,7 @@ resource "azurerm_public_ip" "mqtt" {
     domain_name_label = var.mqtt_dns_label
 
 }
+
 #role of NIC is to connect the vm to the subnet  
 resource "azurerm_network_interface" "mqtt" {
   name                = "${var.prefix}-mqtt-nic"
