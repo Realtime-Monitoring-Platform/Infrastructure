@@ -7,7 +7,7 @@ variable "subscription_id" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "westeurope"
+  default     = "switzerlandnorth" #for my student pack
 }
 
 variable "resource_group_name" {
