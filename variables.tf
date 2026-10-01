@@ -1,62 +1,84 @@
+variable "subscription_id" {
+  description = "Azure subscription ID"
+  type        = string
+  sensitive   = true
+}
+
 variable "location" {
-    description = "Azure region "
-    type = string
-    default = "westeurope"
+  description = "Azure region"
+  type        = string
+  default     = "westeurope"
 }
 
 variable "resource_group_name" {
-    type = string
-    default = "rg-realtime-monitoring"
+  type    = string
+  default = "rg-realtime-monitoring"
 }
 
-
 variable "prefix" {
-    type = string 
-    default = "rtm"
+  type    = string
+  default = "rtm"
 }
 
 variable "mqtt_vm_size" {
-    type = string
-    default = "Standard_B2ats_v2"
+  type    = string
+  default = "Standard_B2ats_v2"
 }
 
+
 variable "aks_node_size" {
-    type = string
-    default = "Standard_B2ats_v2"
+  type    = string
+  default = "Standard_D4s_v3"
 }
 
 variable "aks_node_count" {
-    type = number
-    default =1
+  type    = number
+  default = 1
 }
 
 variable "ssh_public_key" {
-    type = string
-    default = "C:/Users/User/Desktop/realtime_monitoring/infra/.ssh/id_rsa.pub"
+  type    = string
+  default = "C:/Users/User/Desktop/realtime_monitoring/infra/.ssh/id_rsa.pub"
 }
 
-variable  "mqtt_dns_label" {
-    type = string
-    default = "mqtt-chedly-2026"
+variable "ssh_allowed_cidr" {
+  description = "Trusted IPv4 CIDR allowed to access the MQTT VM over SSH."
+  type        = string
+
+  validation {
+    condition = (
+      can(cidrhost(var.ssh_allowed_cidr, 0)) &&
+      var.ssh_allowed_cidr != "0.0.0.0/0"
+    )
+
+    error_message = "ssh_allowed_cidr must be a valid trusted CIDR and cannot allow SSH from the entire internet."
+  }
+}
+
+variable "mqtt_dns_label" {
+  type    = string
+  default = "mqtt-chedly-2026"
 }
 
 variable "postgres_admin_username" {
-    type = string
-    default = "postgres"
+  type    = string
+  default = "postgres"
 }
 
 variable "postgres_admin_password" {
-    type = string
-    default = "postgres"
-    sensitive = true
+  type      = string
+  sensitive = true
 }
 
-
 variable "postgres_databases" {
-    type = list(string)
-    default = ["jwt","ai_analysis_db",
+  type = list(string)
+
+  default = [
+    "jwt",
+    "ai_analysis_db",
     "notification",
     "device_management",
     "read_database",
-    "tenant_mang"]
+    "tenant_mang"
+  ]
 }
