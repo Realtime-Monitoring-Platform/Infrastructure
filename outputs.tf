@@ -10,6 +10,7 @@ output "mqtt_fqdn" {
   value       = azurerm_public_ip.mqtt.fqdn
   description = "Free Azure DNS name → use this in your certificate SAN"
 }
+
 output "mqtt_private_ip" {
   value = azurerm_network_interface.mqtt.private_ip_address
 }
