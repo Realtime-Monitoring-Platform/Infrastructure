@@ -230,11 +230,13 @@ resource "azurerm_linux_virtual_machine" "mqtt" {
 }
 
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                = "${var.prefix}-aks-cluster"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  dns_prefix          = "${var.prefix}-aks"
-  sku_tier            = "Free"
+  name                      = "${var.prefix}-aks-cluster"
+  location                  = azurerm_resource_group.main.location
+  resource_group_name       = azurerm_resource_group.main.name
+  dns_prefix                = "${var.prefix}-aks"
+  sku_tier                  = "Free"
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
 
   default_node_pool {
     name            = "default"
@@ -246,6 +248,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   identity {
     type = "SystemAssigned"
+  }
+
+  key_vault_secrets_provider {
+    secret_rotation_enabled  = true
+    secret_rotation_interval = "2m"
   }
 
   network_profile {
@@ -261,6 +268,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
 }
 
+resource "azurerm_user_assigned_identity" "keyvault" {
+  name                = "${var.prefix}-keyvault-identity"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+}
 
 data "azurerm_client_config" "current" {}
 resource "azurerm_key_vault" "main" {
@@ -273,6 +285,26 @@ resource "azurerm_key_vault" "main" {
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
   rbac_authorization_enabled = true
+}
+resource "azurerm_role_assignment" "kv_workload_identity" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.keyvault.principal_id
+}
+
+resource "azurerm_federated_identity_credential" "keyvault" {
+  name = "${var.prefix}-keyvault-federated"
+  # resource_group_name = azurerm_resource_group.main.name
+
+  parent_id = azurerm_user_assigned_identity.keyvault.id
+
+  issuer = azurerm_kubernetes_cluster.aks.oidc_issuer_url
+
+  subject = "system:serviceaccount:realtime-monitoring:realtime-monitoring-sa"
+
+  audience = [
+    "api://AzureADTokenExchange"
+  ]
 }
 
 resource "azurerm_role_assignment" "kv_current_user" {
